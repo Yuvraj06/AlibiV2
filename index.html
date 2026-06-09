@@ -340,67 +340,14 @@
       text-align: right;
     }
 
-    /* COLUMNS */
+    /* CASES LIST */
     .levels-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0;
-      padding: 32px 0 40px;
-    }
-
-    .col-easy {
-      border-right: 1px solid var(--border);
-      padding-right: 40px;
-    }
-
-    .col-normal {
-      padding-left: 40px;
-    }
-
-    .col-header {
       display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .col-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
-
-    .easy .col-dot {
-      background: var(--gold);
-      box-shadow: 0 0 10px var(--gold);
-    }
-
-    .normal .col-dot {
-      background: var(--red-light);
-      box-shadow: 0 0 10px var(--red-light);
-    }
-
-    .col-name {
-      font-family: 'Special Elite', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-    }
-
-    .easy .col-name {
-      color: var(--gold);
-    }
-
-    .normal .col-name {
-      color: var(--red-light);
-    }
-
-    .col-desc {
-      font-family: 'Special Elite', monospace;
-      font-size: 0.6rem;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-      margin-left: auto;
+      flex-direction: column;
+      max-width: 680px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 0 40px;
     }
 
     /* STORY CARD */
@@ -422,33 +369,18 @@
       top: 0;
       bottom: 0;
       width: 3px;
+      background: transparent;
       transition: background 0.25s;
     }
 
-    .easy .story-card::before {
-      background: transparent;
-    }
-
-    .easy .story-card:hover::before {
-      background: var(--gold);
-    }
-
-    .normal .story-card::before {
-      background: transparent;
-    }
-
-    .normal .story-card:hover::before {
+    .story-card:hover::before {
       background: var(--red-light);
     }
 
     .story-card:hover {
-      border-color: var(--gold-dim);
+      border-color: #5a1a1a;
       transform: translateX(4px);
       background: #17160f;
-    }
-
-    .normal .story-card:hover {
-      border-color: #5a1a1a;
     }
 
     .story-card::after {
@@ -468,17 +400,9 @@
       font-family: 'Special Elite', monospace;
       font-size: 0.6rem;
       letter-spacing: 0.25em;
-      color: var(--muted);
+      color: #6b2020;
       text-transform: uppercase;
       margin-bottom: 8px;
-    }
-
-    .easy .card-num {
-      color: var(--gold-dim);
-    }
-
-    .normal .card-num {
-      color: #6b2020;
     }
 
     .card-title {
@@ -513,14 +437,6 @@
       padding: 3px 9px;
       border: 1px solid;
       border-radius: 2px;
-    }
-
-    .easy .meta-pill {
-      color: var(--gold-dim);
-      border-color: var(--gold-dim);
-    }
-
-    .normal .meta-pill {
       color: #6b2020;
       border-color: #6b2020;
     }
@@ -539,12 +455,8 @@
       transform: translateY(-50%) translateX(6px);
       opacity: 0;
       transition: all 0.25s;
-      color: var(--gold);
-      font-size: 1.1rem;
-    }
-
-    .normal .card-arrow {
       color: var(--red-light);
+      font-size: 1.1rem;
     }
 
     .story-card:hover .card-arrow {
@@ -572,28 +484,17 @@
       padding: 2px 7px;
     }
 
-    /* DIVIDER */
-    .col-divider {
-      height: 1px;
-      background: var(--border);
-      margin: 8px 0 20px;
-    }
-
     /* ── MODE TOOLTIP ── */
     .mode-tooltip {
       margin-bottom: 24px;
       background: var(--card);
-      border-left: 3px solid var(--gold);
+      border-left: 3px solid var(--red-light);
       padding: 12px 18px;
       font-family: 'Crimson Text', serif;
       font-style: italic;
       font-size: 0.9rem;
       color: var(--muted);
       line-height: 1.5;
-    }
-
-    .mode-tooltip.normal {
-      border-left-color: var(--red-light);
     }
 
     /* scrollbar */
@@ -819,35 +720,11 @@
         <div class="mode-label-wrap">Select a case<br>to begin</div>
       </div>
 
-      <div class="levels-grid">
+      <div class="levels-grid" id="col-cases">
 
-        <!-- ── EASY COLUMN (rendered by JS) ── -->
-        <div class="col-easy easy" id="col-easy">
-          <div class="col-header">
-            <span class="col-dot"></span>
-            <span class="col-name">Easy Mode</span>
-            <span class="col-desc">Find the lie</span>
-          </div>
-
-          <div class="mode-tooltip">
-            Each suspect speaks one sentence. One of them is lying. Find the false statement and explain why.
-          </div>
-        </div>
-
-        <!-- ── NORMAL COLUMN ── -->
-        <div class="col-normal normal" id="col-normal">
-          <div class="col-header">
-            <span class="col-dot"></span>
-            <span class="col-name">Normal Mode</span>
-            <span class="col-desc">Interrogate · Deduce · Conclude</span>
-          </div>
-
-          <div class="mode-tooltip normal">
-            Freely interrogate all four suspects. Cross-reference clues. Then name the culprit — and explain
-            <em>why</em> they did it.
-          </div>
-
-
+        <div class="mode-tooltip">
+          Freely interrogate all four suspects. Cross-reference clues. Then name the culprit — and explain
+          <em>why</em> they did it.
         </div>
 
       </div>
@@ -864,15 +741,9 @@
         alibis and finding the fatal flaws hidden in their stories.
       </div>
       <div class="modal-text">
-        <strong>Easy Mode (Find the Lie):</strong> Four suspects each give a single statement. Three are telling the
-        truth, and exactly one is lying. The liar's statement will always contain a physical impossibility or logical
-        contradiction based on the context of the crime scene (e.g. claiming to browse by moonlight during a new moon).
-        Pick the liar and explain the flaw in their logic.
-      </div>
-      <div class="modal-text">
-        <strong>Normal Mode (The Interrogation):</strong> You are dropped into an open-ended scenario. Chat freely with
-        the suspects using the AI interface. Uncover their hidden secrets to break their alibis. Once you've tracked
-        their exact timelines, click "Conclude" to name the killer and submit your proven theory on their true motive.
+        You are dropped into an open-ended scenario. Chat freely with the suspects using the AI interface. Uncover their
+        hidden secrets to break their alibis. Once you've tracked their exact timelines, click <strong>"Conclude"</strong>
+        to name the killer and submit your proven theory on their true motive.
       </div>
       <button class="modal-close" onclick="hideHowToPlay()">Understood</button>
     </div>
@@ -926,20 +797,20 @@
     }
 
     /* ── RENDER CARDS FROM stories.js ── */
-    function makeCard(story, mode) {
+    function makeCard(story) {
       const isLocked = !story.unlocked;
       const suspectCount = (story.suspects || []).length;
-      const metaText = mode === 'easy' ? `${suspectCount} Suspects · 1 Lie` : `${suspectCount} Suspects · Free Interrogation`;
+      const metaText = `${suspectCount} Suspects · Free Interrogation`;
       const div = document.createElement('div');
       div.className = 'story-card' + (isLocked ? ' locked' : '');
-      if (!isLocked) div.onclick = () => startGame(story.id, mode);
+      if (!isLocked) div.onclick = () => startGame(story.id);
       div.innerHTML = `
         ${isLocked ? '<div class="locked-badge">Locked</div>' : ''}
         <div class="card-num">Case · ${story.caseNumber}</div>
         <div class="card-title">${story.title}</div>
         <div class="card-setting">${story.setting}</div>
         <div class="card-meta">
-          <span class="meta-pill">${mode === 'easy' ? 'Easy' : 'Normal'}</span>
+          <span class="meta-pill">Interrogation</span>
           <span class="card-suspects">${metaText}</span>
         </div>
         ${isLocked ? '' : '<div class="card-arrow">→</div>'}`;
@@ -947,11 +818,8 @@
     }
 
     function renderCards() {
-      const easyCol = document.getElementById('col-easy');
-      const normalCol = document.getElementById('col-normal');
-
-      EASY_STORIES.forEach(story => easyCol.appendChild(makeCard(story, 'easy')));
-      NORMAL_STORIES.forEach(story => normalCol.appendChild(makeCard(story, 'normal')));
+      const casesCol = document.getElementById('col-cases');
+      NORMAL_STORIES.forEach(story => casesCol.appendChild(makeCard(story)));
     }
 
     renderCards();
@@ -974,12 +842,8 @@
       requestAnimationFrame(() => { menu.style.animation = 'fadeIn 0.5s ease both'; });
     }
 
-    function startGame(storyId, mode) {
-      if (mode === 'easy') {
-        window.location.href = `easy.html?story=${storyId}`;
-      } else {
-        window.location.href = `scene.html?story=${storyId}&mode=normal`;
-      }
+    function startGame(storyId) {
+      window.location.href = `scene.html?story=${storyId}&mode=normal`;
     }
 
     function showHowToPlay() {
