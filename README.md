@@ -59,16 +59,15 @@ The production output is generated in `dist/`.
 
 ## Technology
 
-- HTML, CSS, JavaScript, React, and TypeScript
+- HTML, CSS, and JavaScript
 - Vite
 - Groq API for AI-powered gameplay
-- RunAnywhere Web SDK and browser-based WebAssembly
+- Three.js for the 3D scenes
 
 ## Deployment
 
-The project can be deployed to Vercel or another static host. The included
-`vercel.json` configures the cross-origin isolation headers required by the
-WebAssembly runtime.
+The project can be deployed to Vercel or another static host. Run
+`npm run build` and publish the generated `dist/` directory.
 
 Do not add an API key to deployment environment variables intended for the
 browser bundle. Every player should enter their own key through the in-app

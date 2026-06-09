@@ -31,7 +31,7 @@ function formatDialogue(text) {
 ═══════════════════════════════════════════════════════ */
 
 // ── EASY MODE STORIES ──────────────────────────────────
-// Each suspect needs: id, name, role, accentColor, easyStatement, isLying
+// Each suspect needs: id, name, role, accentColor, easyStatement, and isLying.
 // Exactly ONE suspect per story must have isLying: true
 const EASY_STORIES = [
 
