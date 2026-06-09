@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ALIBI — Story Editor</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Special+Elite&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --black: #090909;
+      --deep: #0d0c0a;
+      --card: #13120f;
+      --border: #252218;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --gold-dim: #5a4a1e;
+      --red: #8b1a1a;
+      --red-light: #c0392b;
+      --cream: #e2d9c4;
+      --muted: #6a6050;
+      --green: #4aaa6a;
+    }
+
+    html,
+    body {
+      height: 100%;
+      background: var(--black);
+      color: var(--cream);
+      font-family: 'Crimson Text', Georgia, serif;
+      overflow: hidden;
+    }
+
+    /* ── LAYOUT ── */
+    #shell {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto 1fr;
+      height: 100vh;
+      gap: 0;
+    }
+
+    /* ── HEADER ── */
+    #header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--deep);
+      flex-shrink: 0;
+    }
+
+    .hdr-left {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+    }
+
+    .hdr-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 900;
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .hdr-sub {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .hdr-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .hdr-btn {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 8px 18px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .hdr-btn:hover {
+      color: var(--cream);
+      border-color: var(--gold-dim);
+    }
+
+    .hdr-btn.primary {
+      background: var(--gold);
+      color: var(--black);
+      border-color: var(--gold);
+    }
+
+    .hdr-btn.primary:hover {
+      background: var(--gold-light);
+    }
+
+    .hdr-btn.danger {
+      border-color: var(--red);
+      color: var(--red-light);
+    }
+
+    .hdr-btn.danger:hover {
+      background: var(--red);
+      color: var(--cream);
+    }
+
+    /* ── PANELS ── */
+    #form-panel {
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 24px 28px 40px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--gold-dim) transparent;
+    }
+
+    #form-panel::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    #form-panel::-webkit-scrollbar-thumb {
+      background: var(--gold-dim);
+    }
+
+    #preview-panel {
+      overflow-y: auto;
+      padding: 24px 28px 40px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--gold-dim) transparent;
+    }
+
+    #preview-panel::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    #preview-panel::-webkit-scrollbar-thumb {
+      background: var(--gold-dim);
+    }
+
+    /* ── SECTION TITLES ── */
+    .section-title {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+
+    /* ── MODE TOGGLE ── */
+    #mode-toggle {
+      display: flex;
+      gap: 0;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+
+    .mode-btn {
+      flex: 1;
+      font-family: 'Special Elite', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 10px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .mode-btn.active.easy {
+      background: var(--gold-dim);
+      color: var(--gold);
+    }
+
+    .mode-btn.active.normal {
+      background: var(--red);
+      color: var(--cream);
+    }
+
+    /* ── FORM FIELDS ── */
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-family: 'Special Elite', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="color"],
+    textarea,
+    select {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--cream);
+      font-family: 'Crimson Text', serif;
+      font-size: 0.95rem;
+      padding: 9px 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="color"] {
+      height: 38px;
+      padding: 3px 6px;
+      cursor: pointer;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--gold-dim);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+      line-height: 1.5;
+    }
+
+    ::placeholder {
+      color: var(--muted);
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .row3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* ── SUSPECT BLOCK ── */
+    .suspect-block {
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .suspect-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--card);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .suspect-header:hover {
+      background: #17160e;
+    }
+
+    .suspect-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .suspect-num {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .suspect-name-preview {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--cream);
+    }
+
+    .lying-badge {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.52rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--red-light);
+      border: 1px solid var(--red);
+      padding: 2px 7px;
+      display: none;
+    }
+
+    .lying-badge.show {
+      display: inline-block;
+    }
+
+    .chevron {
+      color: var(--muted);
+      font-size: 0.8rem;
+      transition: transform 0.2s;
+    }
+
+    .suspect-block.open .chevron {
+      transform: rotate(180deg);
+    }
+
+    .suspect-body {
+      display: none;
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .suspect-block.open .suspect-body {
+      display: block;
+    }
+
+    /* hidden in easy / normal */
+    .easy-only {
+      display: none;
+    }
+
+    .normal-only {
+      display: none;
+    }
+
+    .mode-easy .easy-only {
+      display: block;
+    }
+
+    .mode-normal .normal-only {
+      display: block;
+    }
+
+    /* checkbox row */
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+    }
+
+    .check-row input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--red-light);
+      cursor: pointer;
+    }
+
+    .check-row label {
+      margin: 0;
+      font-family: 'Crimson Text', serif;
+      font-size: 0.9rem;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--cream);
+      cursor: pointer;
+    }
+
+    /* ── PREVIEW ── */
+    .preview-label {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .copy-mini {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-mini:hover {
+      color: var(--gold);
+      border-color: var(--gold-dim);
+    }
+
+    #json-preview {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 16px;
+      font-family: 'Special Elite', monospace;
+      font-size: 0.72rem;
+      line-height: 1.7;
+      color: #a89878;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-x: hidden;
+    }
+
+    #json-preview .jk {
+      color: var(--gold);
+    }
+
+    #json-preview .js {
+      color: #88c8a8;
+    }
+
+    #json-preview .jb {
+      color: var(--red-light);
+    }
+
+    #json-preview .jn {
+      color: #8ab4d4;
+    }
+
+    /* ── LIBRARY PANEL ── */
+    #library-bar {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #library-select {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--cream);
+      font-family: 'Special Elite', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      padding: 8px 12px;
+      outline: none;
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--card);
+      border: 1px solid var(--gold-dim);
+      font-family: 'Special Elite', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      padding: 10px 22px;
+      z-index: 60;
+      opacity: 0;
+      transition: all 0.3s;
+      pointer-events: none;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    #toast.ok {
+      border-color: var(--green);
+      color: var(--green);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="shell">
+
+    <!-- ══ HEADER ══ -->
+    <div id="header">
+      <div class="hdr-left">
+        <div class="hdr-title">ALIBI</div>
+        <div class="hdr-sub">Story Editor</div>
+      </div>
+      <div class="hdr-actions">
+        <button class="hdr-btn" onclick="loadFromLibrary()">↓ Load</button>
+        <button class="hdr-btn" onclick="clearForm()">✕ New</button>
+        <button class="hdr-btn" onclick="copyJSON()">⎘ Copy JSON</button>
+        <button class="hdr-btn primary" onclick="saveToLibrary()">✓ Save to Library</button>
+        <button class="hdr-btn danger" onclick="exportLibrary()">↑ Export stories.js</button>
+      </div>
+    </div>
+
+    <!-- ══ FORM PANEL ══ -->
+    <div id="form-panel">
+
+      <!-- Library loader -->
+      <div id="library-bar">
+        <select id="library-select" onchange="loadSelected()">
+          <option value="">— Load a saved story —</option>
+        </select>
+      </div>
+
+      <!-- Mode toggle -->
+      <div id="mode-toggle">
+        <button class="mode-btn easy active" onclick="setMode('easy')">Easy Mode</button>
+        <button class="mode-btn normal" onclick="setMode('normal')">Normal Mode</button>
+      </div>
+
+      <!-- STORY METADATA -->
+      <div class="section-title"><span class="dot"></span> Story Details</div>
+
+      <div class="row3" style="margin-bottom:12px">
+        <div class="field-group">
+          <label>Case ID (url-safe)</label>
+          <input type="text" id="f-id" placeholder="missing-crimson-chalice" oninput="updatePreview()" />
+        </div>
+        <div class="field-group">
+          <label>Case Number</label>
+          <input type="text" id="f-caseNumber" placeholder="E-001" oninput="updatePreview()" />
+        </div>
+        <div class="field-group">
+          <label>Unlocked?</label>
+          <select id="f-unlocked" onchange="updatePreview()">
+            <option value="true">Yes — visible to players</option>
+            <option value="false">No — locked</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Title</label>
+        <input type="text" id="f-title" placeholder="The Missing Crimson Chalice" oninput="updatePreview()" />
+      </div>
+
+      <div class="field-group">
+        <label>Setting</label>
+        <input type="text" id="f-setting" placeholder="Blackwood Estate, Grand Hall — Winter Storm, 9:00 PM"
+          oninput="updatePreview()" />
+      </div>
+
+      <div class="field-group">
+        <label>Situation (shown to player at the top of the game)</label>
+        <textarea id="f-situation" rows="3" placeholder="Describe what happened — the crime, time, place, what's known."
+          oninput="updatePreview()"></textarea>
+      </div>
+
+      <!-- NORMAL ONLY: Culprit + Motive -->
+      <div class="normal-only" id="normal-meta">
+        <div class="row2" style="margin-bottom:12px">
+          <div class="field-group">
+            <label>Culprit (suspect ID)</label>
+            <input type="text" id="f-culprit" placeholder="aldous" oninput="updatePreview()" />
+          </div>
+        </div>
+        <div class="field-group">
+          <label>True Motive (used to grade the player's verdict)</label>
+          <textarea id="f-trueMotive" rows="2" placeholder="The true reason the culprit committed the crime."
+            oninput="updatePreview()"></textarea>
+        </div>
+      </div>
+
+      <!-- SUSPECTS -->
+      <div class="section-title" style="margin-top:24px"><span class="dot"></span> Suspects</div>
+      <div id="suspects-container"></div>
+
+    </div>
+
+    <!-- ══ PREVIEW PANEL ══ -->
+    <div id="preview-panel">
+      <div class="preview-label">
+        <span>Live JSON Preview</span>
+        <button class="copy-mini" onclick="copyJSON()">Copy →</button>
+      </div>
+      <div id="json-preview">// Fill in the form to see JSON here</div>
+    </div>
+
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast"></div>
+
+  <script>
+
+    /* ═══════════════════════
+       STATE
+    ═══════════════════════ */
+    let currentMode = 'easy';
+
+    const SUSPECT_DEFAULTS = [
+      { name: '', role: '', accentColor: '#c9a84c' },
+      { name: '', role: '', accentColor: '#c0392b' },
+      { name: '', role: '', accentColor: '#4a9aba' },
+      { name: '', role: '', accentColor: '#4a7a4a' },
+    ];
+
+    /* ═══════════════════════
+       INIT
+    ═══════════════════════ */
+    window.addEventListener('DOMContentLoaded', () => {
+      buildSuspectForms();
+      setMode('easy');
+      refreshLibrarySelect();
+    });
+
+    /* ═══════════════════════
+       MODE TOGGLE
+    ═══════════════════════ */
+    function setMode(m) {
+      currentMode = m;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector(`.mode-btn.${m}`).classList.add('active');
+
+      const fp = document.getElementById('form-panel');
+      fp.classList.remove('mode-easy', 'mode-normal');
+      fp.classList.add('mode-' + m);
+
+      // Update case number prefix hint
+      document.getElementById('f-caseNumber').placeholder = m === 'easy' ? 'E-001' : 'N-001';
+      updatePreview();
+    }
+
+    /* ═══════════════════════
+       SUSPECT FORMS
+    ═══════════════════════ */
+    function buildSuspectForms() {
+      const container = document.getElementById('suspects-container');
+      container.innerHTML = '';
+      for (let i = 0; i < 4; i++) {
+        container.appendChild(makeSuspectBlock(i));
+      }
+    }
+
+    function makeSuspectBlock(i) {
+      const labels = ['Suspect 1', 'Suspect 2', 'Suspect 3', 'Suspect 4'];
+      const div = document.createElement('div');
+      div.className = 'suspect-block';
+      div.id = `suspect-block-${i}`;
+      if (i === 0) div.classList.add('open');
+
+      div.innerHTML = `
+    <div class="suspect-header" onclick="toggleSuspect(${i})">
+      <div class="suspect-header-left">
+        <span class="suspect-num">${labels[i]}</span>
+        <span class="suspect-name-preview" id="s-preview-name-${i}">—</span>
+        <span class="lying-badge" id="s-lying-badge-${i}">Lying</span>
+      </div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="suspect-body">
+      <div class="row2" style="margin-bottom:12px">
+        <div class="field-group">
+          <label>Suspect ID (url-safe)</label>
+          <input type="text" id="s-${i}-id" placeholder="madam-eva" oninput="updateSuspectPreview(${i}); updatePreview()" />
+        </div>
+        <div class="field-group">
+          <label>Accent Color</label>
+          <input type="color" id="s-${i}-color" value="${SUSPECT_DEFAULTS[i].accentColor}" oninput="updatePreview()" />
+        </div>
+      </div>
+      <div class="row2" style="margin-bottom:12px">
+        <div class="field-group">
+          <label>Name</label>
+          <input type="text" id="s-${i}-name" placeholder="Madam Eva" oninput="updateSuspectPreview(${i}); updatePreview()" />
+        </div>
+        <div class="field-group">
+          <label>Role / Title</label>
+          <input type="text" id="s-${i}-role" placeholder="The Guest" oninput="updatePreview()" />
+        </div>
+      </div>
+
+      <!-- EASY ONLY -->
+      <div class="easy-only">
+        <div class="field-group">
+          <label>Alibi Statement (what they claim)</label>
+          <textarea id="s-${i}-stmt" rows="3" placeholder="Write the suspect's alibi statement exactly as shown to the player." oninput="updatePreview()"></textarea>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="s-${i}-lying" onchange="updateLiar(${i}); updatePreview()" />
+          <label for="s-${i}-lying">This suspect is lying (their alibi is the false one)</label>
+        </div>
+      </div>
+
+      <!-- NORMAL ONLY -->
+      <div class="normal-only">
+        <div class="field-group">
+          <label>Opening Line (first thing they say)</label>
+          <input type="text" id="s-${i}-opening" placeholder="I have nothing to hide, I assure you." oninput="updatePreview()" />
+        </div>
+        <div class="field-group">
+          <label>System Prompt (LLM character instructions)</label>
+          <textarea id="s-${i}-prompt" rows="8" placeholder="You are [Name], [role] at [location]. You are [age], [personality]...
+
+WHAT YOU KNOW:
+- Fact 1
+- Fact 2
+
+SECRETS TO GUARD:
+- Secret 1 — only reveal if...
+
+PERSONALITY:
+- Speech patterns...
+
+Keep responses to 2-4 sentences. Never break character." oninput="updatePreview()"></textarea>
+        </div>
+      </div>
+    </div>`;
+      return div;
+    }
+
+    function toggleSuspect(i) {
+      document.getElementById(`suspect-block-${i}`).classList.toggle('open');
+    }
+
+    function updateSuspectPreview(i) {
+      const name = document.getElementById(`s-${i}-name`).value || '—';
+      document.getElementById(`s-preview-name-${i}`).textContent = name;
+    }
+
+    function updateLiar(changedIdx) {
+      // Only one suspect can be the liar
+      for (let i = 0; i < 4; i++) {
+        if (i !== changedIdx) {
+          document.getElementById(`s-${i}-lying`).checked = false;
+        }
+        const badge = document.getElementById(`s-${i}-lying-badge-${i}`) || document.getElementById(`s-lying-badge-${i}`);
+        if (badge) badge.classList.toggle('show', document.getElementById(`s-${i}-lying`).checked);
+      }
+      const myBadge = document.getElementById(`s-lying-badge-${changedIdx}`);
+      if (myBadge) myBadge.classList.toggle('show', document.getElementById(`s-${changedIdx}-lying`).checked);
+    }
+
+    /* ═══════════════════════
+       JSON BUILDER
+    ═══════════════════════ */
+    function buildStoryObject() {
+      const story = {
+        id: v('f-id'),
+        title: v('f-title'),
+        caseNumber: v('f-caseNumber'),
+        setting: v('f-setting'),
+        situation: v('f-situation'),
+        unlocked: document.getElementById('f-unlocked').value === 'true',
+        suspects: [],
+      };
+
+      if (currentMode === 'normal') {
+        story.culprit = v('f-culprit');
+        story.trueMotive = v('f-trueMotive');
+      }
+
+      for (let i = 0; i < 4; i++) {
+        const s = {
+          id: v(`s-${i}-id`),
+          name: v(`s-${i}-name`),
+          role: v(`s-${i}-role`),
+          accentColor: document.getElementById(`s-${i}-color`).value,
+        };
+
+        if (currentMode === 'easy') {
+          s.easyStatement = v(`s-${i}-stmt`);
+          s.isLying = document.getElementById(`s-${i}-lying`).checked;
+        } else {
+          s.openingLine = v(`s-${i}-opening`);
+          s.systemPrompt = v(`s-${i}-prompt`);
+        }
+        story.suspects.push(s);
+      }
+
+      return story;
+    }
+
+    function v(id) {
+      const el = document.getElementById(id);
+      return el ? el.value.trim() : '';
+    }
+
+    /* ═══════════════════════
+       PREVIEW
+    ═══════════════════════ */
+    function updatePreview() {
+      const obj = buildStoryObject();
+      const pretty = JSON.stringify(obj, null, 2);
+      const highlighted = pretty
+        .replace(/"([^"]+)":/g, '<span class="jk">"$1"</span>:')
+        .replace(/: "(.*?)"/g, ': <span class="js">"$1"</span>')
+        .replace(/: (true|false)/g, ': <span class="jb">$1</span>')
+        .replace(/: (\d+)/g, ': <span class="jn">$1</span>');
+      document.getElementById('json-preview').innerHTML = highlighted;
+    }
+
+    /* ═══════════════════════
+       LIBRARY (localStorage)
+    ═══════════════════════ */
+    function getLibrary() {
+      return JSON.parse(localStorage.getItem('alibi-story-library') || '[]');
+    }
+
+    function saveLibrary(lib) {
+      localStorage.setItem('alibi-story-library', JSON.stringify(lib));
+    }
+
+    function saveToLibrary() {
+      const story = buildStoryObject();
+      if (!story.id) { showToast('Set a Case ID first', false); return; }
+      const lib = getLibrary();
+      const idx = lib.findIndex(s => s.id === story.id && s._mode === currentMode);
+      story._mode = currentMode;
+      if (idx >= 0) lib[idx] = story;
+      else lib.push(story);
+      saveLibrary(lib);
+      refreshLibrarySelect();
+      showToast('Saved to library ✓', true);
+    }
+
+    function refreshLibrarySelect() {
+      const sel = document.getElementById('library-select');
+      const lib = getLibrary();
+      sel.innerHTML = '<option value="">— Load a saved story —</option>';
+      lib.forEach((s, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `[${s._mode?.toUpperCase() || '?'}] ${s.title || s.id}`;
+        sel.appendChild(opt);
+      });
+    }
+
+    function loadSelected() {
+      const sel = document.getElementById('library-select');
+      const idx = sel.value;
+      if (idx === '') return;
+      const lib = getLibrary();
+      const story = lib[idx];
+      if (!story) return;
+      populateForm(story);
+    }
+
+    function loadFromLibrary() {
+      // Just focus the dropdown and open it
+      document.getElementById('library-select').focus();
+    }
+
+    function populateForm(story) {
+      setMode(story._mode || 'easy');
+      document.getElementById('f-id').value = story.id || '';
+      document.getElementById('f-title').value = story.title || '';
+      document.getElementById('f-caseNumber').value = story.caseNumber || '';
+      document.getElementById('f-setting').value = story.setting || '';
+      document.getElementById('f-situation').value = story.situation || '';
+      document.getElementById('f-unlocked').value = story.unlocked ? 'true' : 'false';
+
+      if (story.culprit) document.getElementById('f-culprit').value = story.culprit;
+      if (story.trueMotive) document.getElementById('f-trueMotive').value = story.trueMotive;
+
+      (story.suspects || []).forEach((s, i) => {
+        if (i >= 4) return;
+        setSV(i, 'id', s.id);
+        setSV(i, 'name', s.name);
+        setSV(i, 'role', s.role);
+        document.getElementById(`s-${i}-color`).value = s.accentColor || '#c9a84c';
+        if (s.easyStatement !== undefined) setSV(i, 'stmt', s.easyStatement);
+        if (s.isLying !== undefined) {
+          document.getElementById(`s-${i}-lying`).checked = s.isLying;
+          updateLiar(i);
+        }
+        if (s.openingLine !== undefined) setSV(i, 'opening', s.openingLine);
+        if (s.systemPrompt !== undefined) setSV(i, 'prompt', s.systemPrompt);
+        updateSuspectPreview(i);
+      });
+
+      updatePreview();
+      showToast('Story loaded ✓', true);
+    }
+
+    function setSV(i, field, value) {
+      const el = document.getElementById(`s-${i}-${field}`);
+      if (el) el.value = value || '';
+    }
+
+    /* ═══════════════════════
+       EXPORT
+    ═══════════════════════ */
+    function exportLibrary() {
+      const lib = getLibrary();
+      if (!lib.length) { showToast('Library is empty', false); return; }
+
+      const easyStories = lib.filter(s => s._mode === 'easy').map(cleanStory);
+      const normalStories = lib.filter(s => s._mode === 'normal').map(cleanStory);
+
+      const output = `/* ═══════════════════════════════════════════════════════
+   ALIBI — Story Data Layer (exported from Story Editor)
+   EASY_STORIES  → easy.html
+   NORMAL_STORIES → scene.html
+═══════════════════════════════════════════════════════ */
+
+const EASY_STORIES = ${JSON.stringify(easyStories, null, 2)};
+
+const NORMAL_STORIES = ${JSON.stringify(normalStories, null, 2)};
+
+function getEasyStory(id) { return EASY_STORIES.find(s => s.id === id) || null; }
+function getNormalStory(id) { return NORMAL_STORIES.find(s => s.id === id) || null; }
+`;
+
+      const blob = new Blob([output], { type: 'text/javascript' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'stories.js'; a.click();
+      URL.revokeObjectURL(url);
+      showToast('stories.js exported ✓', true);
+    }
+
+    function cleanStory(s) {
+      const clean = { ...s };
+      delete clean._mode;
+      return clean;
+    }
+
+    /* ═══════════════════════
+       COPY
+    ═══════════════════════ */
+    function copyJSON() {
+      const obj = buildStoryObject();
+      navigator.clipboard.writeText(JSON.stringify(obj, null, 2))
+        .then(() => showToast('Copied to clipboard ✓', true))
+        .catch(() => showToast('Copy failed', false));
+    }
+
+    /* ═══════════════════════
+       CLEAR
+    ═══════════════════════ */
+    function clearForm() {
+      document.querySelectorAll('input[type="text"], textarea').forEach(el => el.value = '');
+      document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+      document.querySelectorAll('input[type="color"]').forEach((el, i) => {
+        el.value = SUSPECT_DEFAULTS[i]?.accentColor || '#c9a84c';
+      });
+      for (let i = 0; i < 4; i++) updateSuspectPreview(i);
+      document.getElementById('f-unlocked').value = 'true';
+      updatePreview();
+    }
+
+    /* ═══════════════════════
+       TOAST
+    ═══════════════════════ */
+    let _toastTimer;
+    function showToast(msg, ok) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'show' + (ok ? ' ok' : '');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => t.className = '', 2500);
+    }
+
+  </script>
+</body>
+
+</html>
