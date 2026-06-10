@@ -9,7 +9,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: path.resolve(rootDir, 'index.html'),
-        easy: path.resolve(rootDir, 'easy.html'),
         scene: path.resolve(rootDir, 'scene.html'),
       },
     },
